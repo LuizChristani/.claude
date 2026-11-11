@@ -21,6 +21,7 @@ tokens: ~1k
 | `useMemo` em cálculo | O Profiler mostra o cálculo como gargalo, ou ele percorre 1.000+ itens a cada render | Calcule direto no render |
 | `useMemo` / `useCallback` por identidade | O valor é dependência de um efeito, é o `value` de um Context ou vai para um filho já em `memo` | Valor ou função inline |
 | `memo(Component)` | O Profiler mostra re-renders caros com as mesmas props | Componente normal |
+| `useMemo` em JSX | **Nunca.** Se o Profiler mostrar re-render caro do filho, use `memo` no componente filho ([JSX memoizado](#memoized-jsx)) | Elemento escrito direto no JSX |
 | Virtualizar lista | 200+ linhas visíveis no mesmo scroll, ou travamento medido | `.map` simples |
 | Debounce / throttle | Evento de alta frequência que dispara rede ou cálculo pesado (busca digitada, scroll, resize) | Handler direto |
 | `lazyWithRetry` + `Suspense` | Rota ou painel pesado que nem todo usuário abre | Import normal |
@@ -29,6 +30,57 @@ tokens: ~1k
 - **React Compiler** (estável desde a v1.0, out/2025): em projeto novo, ative. Com ele, código novo não leva `useMemo`, `useCallback` nem `memo` à mão; use `useMemo`/`useCallback` só como válvula de escape quando precisar de controle exato (ex.: dependência de um efeito). Memoização que já existe fica, ou sai uma por vez com teste, porque removê-la muda o que o compilador gera. Fonte: https://react.dev/blog/2025/10/07/react-compiler-1
 - Setup no Vite com `@vitejs/plugin-react` 6+: `babel-plugin-react-compiler` e `@rolldown/plugin-babel`, com `babel({ presets: [reactCompilerPreset()] })` nos plugins. Confira a versão na doc antes: https://react.dev/learn/react-compiler/installation
 - Antes de memoizar, tente o que é de graça: mover o estado para mais perto de quem usa, passar `children` em vez de renderizar dentro, e usar seletores mais estreitos no store.
+
+## Memoized JSX
+
+Criar um elemento (`<SearchInput … />`) a cada render é só criar um objeto: é barato e não é o problema. O que custa é o filho re-renderizar, e quem evita isso é `memo` no componente, só depois de medir. `useMemo` em volta de JSX funciona, mas a doc oficial não recomenda: não pode ser condicional, traz uma lista de dependências para manter e ainda é JSX numa variável ([No JSX in variables](COMPONENTS-STYLING.md#no-jsx-in-variables)).
+
+❌ Errado: o elemento guardado num `useMemo` "para não ser recriado a cada render".
+
+```tsx
+const searchField = useMemo(
+  () => (
+    <SearchInput
+      value={searchTerm}
+      onValueChange={setSearchTerm}
+      onKeyDown={handleSearchKeyDown}
+      placeholder="e.g. Jane Doe"
+      aria-label="Search users"
+    />
+  ),
+  [handleSearchKeyDown, searchTerm, setSearchTerm],
+);
+return <Toolbar>{searchField}</Toolbar>;
+```
+
+✅ Certo: o elemento escrito onde aparece, sem memoização.
+
+`UserToolbar.tsx`:
+
+```tsx
+/** The toolbar above the user list, with the search field. */
+export function UserToolbar({ searchTerm, onSearchTermChange, onSearchKeyDown }: UserToolbarProps) {
+  return (
+    <Toolbar>
+      <SearchInput
+        value={searchTerm}
+        onValueChange={onSearchTermChange}
+        onKeyDown={onSearchKeyDown}
+        placeholder="e.g. Jane Doe"
+        aria-label="Search users"
+      />
+    </Toolbar>
+  );
+}
+```
+
+| Situação | Faça |
+| --- | --- |
+| Nenhuma medição | Elemento direto no JSX |
+| O Profiler mostra o filho re-renderizando caro com as mesmas props | `export const SearchInput = memo(function SearchInput(…) { … })` e props estáveis |
+| Projeto com React Compiler | Elemento direto no JSX; o compilador memoiza sozinho |
+
+Fonte: https://react.dev/reference/react/useMemo#memoizing-individual-jsx-nodes
 
 ## Lazy routes with retry
 
@@ -109,6 +161,7 @@ export function lazyWithRetry<P extends object>(
 
 - **Primitivo pesado por célula:** popover, tooltip ou hook de store em cada um de centenas de itens repetidos (90 dias × 15 linhas = 1.350 popovers, cada um formatando a própria data). Qualquer troca global (idioma, tema) redesenha todos e trava a página por centenas de ms, e a animação que deveria rodar some. Os itens viram elementos simples sem hook, e o detalhe sai de um ponto só (a legenda da linha, um popover por linha); meça o bloqueio no navegador antes e depois.
 - **Memo em tudo:** `useCallback` em cada handler e `useMemo` em cada objeto "por precaução". É ruído, e a lista de dependências errada vira bug.
+- **JSX memoizado:** `useMemo(() => <SearchInput … />, […])` para o elemento "não ser recriado". Recriar o elemento não custa; o código fica mais feio e ganha dependências para manter. Escreva o elemento no JSX e, se a medição pedir, `memo` no componente ([Memoized JSX](#memoized-jsx)).
 - **`memo` furado:** envolver o filho em `memo` e passar um objeto ou arrow novo a cada render. A comparação roda e falha sempre.
 - **Otimização de microbenchmark:** trocar `.map` por `for` ou evitar spread para ganhar nanossegundos que ninguém percebe.
 - **Cache duplicado:** guardar dado do servidor em estado próprio "para ficar mais rápido".

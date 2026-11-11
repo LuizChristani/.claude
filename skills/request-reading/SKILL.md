@@ -29,8 +29,9 @@ tokens: ~1.5k
 | --- | --- | --- |
 | "verifica", "analisa", "olha", "vê o problema", "investiga", "por que X acontece?" | Diagnóstico (causa, evidência com `arquivo:linha`, impacto) e proposta de correção | Não. Só depois que o usuário pedir a mudança |
 | "melhora", "deixa mais fácil", "fica melhor", "mais bonito", sobre algo que já existe | 2 ou 3 propostas (mockup, trecho ou descrição curta), cada uma com o custo, e a recomendação | Não. Só a proposta que o usuário escolher |
-| "sempre", "em todas", "toda vez", "cada" | A mudança aplicada a todos os membros do conjunto (todas as etapas, telas, rotas, endpoints) | Sim, no conjunto inteiro |
+| "sempre", "em todas", "toda vez", "cada", "tudo", "pega tudo" | A mudança aplicada a todos os membros do conjunto (todas as etapas, telas, rotas, endpoints); numa ferramenta de busca ou coleta, todas as fontes e todos os níveis (subpastas, subdomínios dentro de subdomínios) por padrão | Sim, no conjunto inteiro |
 | "corrige", "muda para", "implementa", "adiciona" | A mudança | Sim |
+| Ajuste de uma propriedade: "aumenta a fonte", "deixa maior", "muda a cor", "mais espaço" | Só aquela propriedade; estrutura e direção do layout continuam iguais | Sim, só a propriedade |
 
 - Frases que **não** mudam o verbo: "o código está na máquina", "tenho acesso ao repositório", "pode olhar o projeto". Elas dizem onde olhar, não o que fazer.
 - Escopo universal com conjunto incerto: liste os membros que você achou ("o fluxo tem as etapas A, B, C e D") e pergunte antes de escolher um subconjunto.
@@ -50,12 +51,22 @@ tokens: ~1.5k
 
 ✅ Certo: a barra fixa nas quatro etapas; ou, se não está claro quais telas são do fluxo, "achei as etapas Carrinho, Endereço, Pagamento e Revisão; fixo nas quatro?".
 
+❌ Errado: "um script que pegue todos os links quebrados do site". Ele lê só a página inicial; o rastreio das outras páginas fica atrás de `--deep`.
+
+✅ Certo: o rastreio completo roda por padrão; a flag serve para **limitar** (`--only-home`), e a resposta diz o que a ferramenta não consegue achar.
+
+❌ Errado: "aumenta um pouco a fonte desse card na tela deitada". O card vira duas colunas (`landscape:flex-row` com divisória) e a fonte cresce junto.
+
+✅ Certo: só os tamanhos de texto mudam (`landscape:text-lg`, `landscape:text-2xl`); o card continua empilhado. Se a fonte maior não couber, diga isso e proponha a reorganização antes de fazer.
+
 ## Anti-patterns
 
 - **Conserto não pedido:** o pedido era de análise e a entrega veio com código editado. O usuário perde o controle do que muda e precisa reverter.
 - **Acesso como autorização:** tratar "o código está aqui" ou "pode abrir o projeto" como pedido de mudança.
 - **Redesenho surpresa:** pedido vago de melhoria respondido com a troca de algo que funciona, sem mostrar antes; o usuário pede para voltar e o trabalho se perde.
+- **Ajuste que vira redesenho:** o pedido mexe numa propriedade (fonte, cor, espaço) e a entrega reorganiza o layout junto (direção, colunas, divisórias); o usuário pede para desfazer a parte que não pediu.
 - **Sempre pela metade:** escopo universal aplicado a um subconjunto escolhido por conta própria ("só nas etapas que pareciam importantes").
+- **Tudo atrás de flag:** o pedido diz "pega tudo" e a ferramenta usa uma fonte só por padrão, com o resto atrás de opção; o usuário roda, vê pouco e acha que não funciona.
 
 ## Trade-offs
 
@@ -71,6 +82,7 @@ tokens: ~1.5k
 - [ ] Pedido de análise: nenhum arquivo do projeto foi editado; a resposta tem causa, evidência e proposta
 - [ ] Pedido vago de melhoria: mostrei 2 ou 3 propostas com recomendação antes de trocar o que existe
 - [ ] Escopo universal: a mudança cobre todos os membros do conjunto, ou perguntei quais são
+- [ ] Ajuste de uma propriedade: só ela mudou; direção, colunas e estrutura do layout estão como antes
 - [ ] Nada foi feito além do que o pedido entrega
 
 ## See also

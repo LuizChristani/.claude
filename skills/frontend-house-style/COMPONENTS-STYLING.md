@@ -119,6 +119,7 @@ export type { ButtonProps } from './ButtonRoot';
 | Regra | Detalhe |
 | --- | --- |
 | Quando compor | 2+ regiões configuráveis (cabeçalho, corpo, rodapé, ícone) → partes; senão um componente simples num arquivo só |
+| Região opcional | Vira parte de **posição** (`Header.IconLeft`, `Header.Title`, `Header.IconRight`) com `...rest` do elemento, e quem usa monta só o que quer e decide ícone e ação. Anti-patterns: **interruptor-por-prop** (`onBack?`/`onClose?` ligando botões, `cn(onBack ? … : …)` corrigindo o espaçamento) e **parte-por-ação** (`Header.Back`, `Header.Close`, ou opções `{ back, close }` numa fábrica decidindo quais partes aparecem) |
 | Props | `interface` que estende `ComponentProps<'el'>`; defaults na desestruturação; `...rest` no elemento raiz |
 | `ref` | Prop comum (React 19); nada de `forwardRef` novo |
 | Contexto | Valor memoizado com `useMemo` (a exceção de [PERFORMANCE.md](PERFORMANCE.md); dispensável com React Compiler); `<Ctx value={…}>` (React 19); hook `use<Name>()` ao lado |
@@ -185,7 +186,7 @@ export function InvoiceRow({ invoice }: InvoiceRowProps) {
 | Mesmo componente em dois lugares → objeto de props tipado e `<UserActions {...actions} />` em cada lugar | `const actions = (<UserActions … />)` e `{actions}` nos dois |
 | Variante de layout → um componente por layout (`UserPanelWide`, `UserPanelCompact`) | `const content = (…)` e `const phoneContent = (…)` escolhidos por condição |
 
-**Nunca, nem com um elemento só.** `const actions = <UserActions … />` também é JSX em variável, mesmo sem nenhuma tag nativa.
+**Nunca, nem com um elemento só.** `const actions = <UserActions … />` também é JSX em variável, mesmo sem nenhuma tag nativa. **Nem dentro de `useMemo`:** `const field = useMemo(() => <SearchInput … />, […])` é a mesma violação, com dependências a mais ([PERFORMANCE.md](PERFORMANCE.md#memoized-jsx)).
 
 ❌ Errado: o elemento guardado para aparecer nos dois layouts.
 

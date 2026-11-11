@@ -70,5 +70,6 @@ const coverage = {
 
 ## Anti-patterns
 
+- **Edição por shell sem formatter:** escrever arquivo com `sed`, heredoc ou script e dar por pronto porque o hook não reclamou; o hook de edição não vê o shell. Rode `prettier --check` nos arquivos tocados (e `--write` se falhar) antes de fechar a tarefa.
 - **Teste de implementação:** afirmar estado interno, contar renders ou checar classe CSS. Afirme o texto e a estrutura que o usuário vê, e as chamadas feitas.
 - **Cobertura maquiada:** comentário de ignore para chegar a 100%.

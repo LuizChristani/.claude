@@ -18,6 +18,7 @@ tokens: ~1.5k
 | `export default` só onde o framework exige (`App`, arquivos de rota do Next.js) | `export default function UserCard` |
 | Arrow só para callbacks, seletores e funções locais curtas | Arrow como componente ou função exportada |
 | Composto: `export const Card = Object.assign(CardRoot, { Title: CardTitle })` | Partes soltas sem raiz comum |
+| Fábrica que devolve um componente para uma opção do framework: `const header = (props: HeaderProps) => …; return header;` (o nome da opção dá o display name que o `react/display-name` pede) | `function renderHeader(…)` declarada dentro da fábrica; arrow anônima no `return` |
 
 ## const-then-return
 
@@ -170,6 +171,44 @@ export type TeamId = Brand<string, 'TeamId'>;
 
 - O id ganha a marca uma vez, na fronteira (no schema que valida a resposta da API); o resto do app só recebe `UserId`.
 - Custa cerimônia: use quando o app tem 3 ou mais tipos de id trafegando nas mesmas funções.
+
+**Tipo com nome na assinatura:** a assinatura só tem nomes de tipo. Um tipo derivado ganha um nome exportado ao lado da origem; o objeto de opções ganha uma `interface` com campos obrigatórios e o valor padrão fica numa `const` com nome. O anti-pattern se chama **assinatura-quebra-cabeça**: tipo derivado inline mais desestruturação com default e `= {}`, e quem chama precisa decifrar três coisas para saber o que passar.
+
+❌ Errado: tipo derivado inline, opções opcionais com default escondido na desestruturação.
+
+```tsx
+export function formatAmount(
+  icon: ComponentProps<typeof Icon>['name'],
+  { currency = DEFAULT_CURRENCY, cents = true }: AmountFormat = {},
+) {
+```
+
+✅ Certo: `IconName` exportado junto do `Icon`, campos obrigatórios e o padrão com nome.
+
+`Icon.tsx`:
+
+```tsx
+/** Name of a glyph, the `name` an {@link Icon} takes. */
+export type IconName = IconProps['name'];
+```
+
+`formatAmount.ts`:
+
+```tsx
+export interface AmountFormat {
+  currency: string;
+  cents: boolean;
+}
+
+const WITH_CENTS: AmountFormat = { currency: DEFAULT_CURRENCY, cents: true };
+
+/** The amount with its `icon`, in the given `format`. */
+export function formatAmount(icon: IconName, format: AmountFormat = WITH_CENTS) {
+```
+
+- O custo é uma linha de `type` e uma `const`. Em troca, o tipo é lido num lugar só e o padrão aparece pelo nome no autocomplete.
+- Desestruturar props de componente continua liberado (`function Price({ amount, listSize }: PriceProps)`). A regra vale para o default de opções escondido na assinatura.
+- O `check-style.mjs` acusa como `inline-derived-type` (`ComponentProps<typeof X>['y']` fora de uma declaração `type`) e `param-default-destructure` (`{ a = … }: Tipo = {}`).
 
 ## Naming
 

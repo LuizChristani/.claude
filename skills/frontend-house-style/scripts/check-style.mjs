@@ -201,6 +201,9 @@ function checkFile(file) {
       /^(const|let)\s+\w+(\s*:[^=]+)?\s*=\s*<[A-Za-z>]/.test(trimmed) ||
       (/^(const|let)\s+\w+(\s*:[^=]+)?\s*=\s*\($/.test(trimmed) && /^<[A-Za-z>]/.test(nextTrimmed));
     if (isTsx && jsxInConst) add('jsx-in-variable', 'JSX stored in a variable; extract a component instead');
+    const memoStart = /^(const|let)\s+\w+(\s*:[^=]+)?\s*=\s*(React\.)?useMemo\(/.test(trimmed);
+    const memoHead = [trimmed, nextTrimmed, (lines[index + 2] ?? '').trim()].join(' ');
+    if (isTsx && memoStart && /useMemo\(\s*\(\)\s*=>\s*\(?\s*<[A-Za-z>]/.test(memoHead)) add('jsx-in-memo', 'JSX wrapped in useMemo; write the element in the JSX and, only if the Profiler asks, memo the child component (PERFORMANCE.md#memoized-jsx)');
     if (/^return\s*\{[^}]*\b[A-Za-z_$][\w$]*\s*:\s*(?!(?:true|false|null|undefined|NaN|Infinity|[A-Z][A-Z0-9_]*)\b)[A-Za-z_$][\w$]*\s*[,}]/.test(trimmed)) add('rename-in-return', 'value renamed inside the return object; rename the declaration and use shorthand');
     const isCodeLine = !/^(\/\/|\*|\/\*)/.test(trimmed);
     const comparedLiteral = [...trimmed.matchAll(/([\w$]+)\s*[!=]==\s*(?:'[^']|"[^"])|(?:[^']'|[^"]")\s*[!=]==\s*[\w$.?]*?([\w$]+)\b/g)];
@@ -223,6 +226,9 @@ function checkFile(file) {
         add('jsx-in-prop', 'markup inside a prop; extract it into a component and pass that element (COMPONENTS-STYLING.md#no-markup-in-props)');
       }
     }
+    if (isCodeLine && !/^(export\s+)?type\s+\w+/.test(trimmed) && /\bComponentProps<typeof\s+\w+>\[/.test(trimmed)) add('inline-derived-type', "derived type written inline; export a named type next to its source (`export type IconName = IconProps['name']`) and use the name (CODE-STYLE.md#typing-props-and-data)");
+    if (line !== trimmed && /^function\s+render[A-Z]\w*\s*\(/.test(trimmed)) add('inner-render-function', 'render function declared inside another function; keep the arrow in a const named after the option it fills (`const header = (…) => …; return header;`) (CODE-STYLE.md#exports-and-functions)');
+    if (isCodeLine && /\{\s*\w+\s*=[^}]*\}\s*:\s*\w+(<[^>]*>)?\s*=\s*\{\s*\}/.test(trimmed)) add('param-default-destructure', 'options defaulted inside the signature (`{ a = … }: Options = {}`); make the fields required and default the parameter to a named const (CODE-STYLE.md#typing-props-and-data)');
     if (/^(export\s+)?(interface\s+\w+|type\s+\w+(<[^>]*>)?\s*=\s*\{)/.test(line) && !/\}\s*;?\s*$/.test(trimmed)) inShapeBlock = true;
     else if (inShapeBlock && /^\}/.test(line)) inShapeBlock = false;
     else if (inShapeBlock && /^\/\*\*/.test(trimmed)) add('field-jsdoc', 'JSDoc on an interface or type field (props or data); give the field a self-explanatory name and keep the JSDoc on the type or component (CODE-STYLE.md#typing-props-and-data)');
