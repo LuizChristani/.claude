@@ -1,6 +1,6 @@
 ---
 name: complexity-audit-report
-description: Format of the complexity report written inside the audited app — file location and name, finding IDs, the per-finding cost table (time, memory, I/O, real n, measured or not), proposals with their price and proof, and the list of what was checked and is fine. Use when creating or updating a complexity report.
+description: Format of the complexity report written in the workspace root .claude/complexity/<app>/ (never inside the app) — file location and name, finding IDs, the per-finding cost table (time, memory, I/O, real n, measured or not), proposals with their price and proof, and the list of what was checked and is fine. Use when creating or updating a complexity report.
 type: reference
 scope: cross-cutting
 tokens: ~1k
@@ -8,13 +8,13 @@ tokens: ~1k
 
 # Complexity report
 
-> **TL;DR:** Um arquivo por rodada em `<app>/.claude/complexity/AAAA-MM-DD-<assunto>.md`. Cada achado tem onde, custo de tempo, memória e I/O, o `n` real, a medição e as propostas. O que foi olhado e está bem também entra.
+> **TL;DR:** Um arquivo por rodada em `<workspace>/.claude/complexity/<app>/AAAA-MM-DD-<assunto>.md`, na `.claude/` da raiz (a mesma que guarda esta biblioteca de skills). Cada achado tem onde, custo de tempo, memória e I/O, o `n` real, a medição e as propostas. O que foi olhado e está bem também entra.
 
 ## Location
 
 | Item | Regra |
 | --- | --- |
-| Pasta | `.claude/complexity/` na raiz da aplicação analisada |
+| Pasta | `.claude/complexity/<app>/` na `.claude/` da raiz do workspace, a mesma que guarda a biblioteca de skills; `<app>` é o nome da pasta da aplicação. **Nunca** no `.claude/` da aplicação |
 | Nome | `AAAA-MM-DD-<assunto-em-kebab>.md`; segunda rodada no mesmo dia e assunto ganha `-2` |
 | ID do achado | `CX-AAAA-MM-DD-N`, sequencial dentro do relatório |
 
@@ -62,6 +62,8 @@ tokens: ~1k
 ```
 
 ## Anti-patterns
+
+- **Relatório dentro do app:** o arquivo vai para o `.claude/` da aplicação, oculto e muitas vezes no `.gitignore`; o usuário não acha. Sempre na `.claude/` da raiz, em `complexity/<app>/`.
 
 - **Relatório só de problemas:** sem a seção "Olhado e sem problema", ninguém sabe o que foi coberto.
 - **Proposta sem preço:** "use um índice" sem dizer a memória, a escrita mais lenta ou a migração que ele custa.

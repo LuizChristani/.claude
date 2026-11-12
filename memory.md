@@ -22,6 +22,13 @@ Registro do que o Claude fez errado no código e de como o usuário pediu para c
 
 ## Entradas
 
+### 2026-11-12 · merchant-portal-web · Relatório gravado dentro do app
+- **Errado:** o relatório do `/qa` foi para `merchant-portal-web/.claude/qa/2026-11-12-casos-risco-alto.md`, a `.claude/` do app, que é oculta e está no `.gitignore` dele; o usuário procurou e não achou.
+- **Correção pedida:** "tem nada não vi nada" e "Não po sempre na .claude raiz né".
+- **Regra:** relatório de skill (QA, complexidade) vai sempre para a `.claude/` da raiz do workspace, em `<tipo>/<app>/AAAA-MM-DD-<assunto>.md`, nunca para a `.claude/` da aplicação; a resposta dá o caminho absoluto.
+- **Skill atualizada:** `skills/qa/REPORT.md` (Location, anti-pattern "Relatório dentro do app"), `skills/qa/SKILL.md`, `skills/qa/scripts/qa-scan.mjs` (lê os IDs em `.claude/qa/<app>/` da raiz), `skills/complexity-audit/REPORT.md` e `skills/complexity-audit/SKILL.md`.
+- **Vezes:** 1
+
 ### 2026-11-12 · merchant-portal-web · Token literal no lugar do mock
 - **Errado:** ao repor o teste "três requisições consecutivas" em `packages/pos/src/data/http/one-shot-approval.test.ts`, só renomeei o array `elevate` para `tokens` e passei `'tok-1'`/`'tok-2'` direto ao `authHeaders`, sem usar o mock `elevate` do topo do arquivo.
 - **Correção pedida:** "PROQUE NAO USOU DO MOCK?"

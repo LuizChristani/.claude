@@ -1,6 +1,6 @@
 ---
 name: qa
-description: Quality assurance for any app (web React, mobile Android, API/backend), in any project — lists everything in the app that has no test, builds a test plan from the code in scope, writes regression tests for code that already exists so nothing breaks again, marks a test that exposes a bug as a known failure tied to a bug ID, and only reports bugs (never fixes them) in a dated report inside the app's own .claude/qa/. Use when the user runs /qa or asks for "QA", "plano de testes", "testa essa feature", "cobre com testes o que já existe", "teste de regressão", "não quero que quebre mais nada" or "o que está sem teste".
+description: Quality assurance for any app (web React, mobile Android, API/backend), in any project — lists everything in the app that has no test, builds a test plan from the code in scope, writes regression tests for code that already exists so nothing breaks again, marks a test that exposes a bug as a known failure tied to a bug ID, and only reports bugs (never fixes them) in a dated report in the workspace root .claude/qa/<app>/ (the .claude that holds this skill library), never inside the app. Use when the user runs /qa or asks for "QA", "plano de testes", "testa essa feature", "cobre com testes o que já existe", "teste de regressão", "não quero que quebre mais nada" or "o que está sem teste".
 type: skill
 scope: cross-cutting
 tokens: ~1.5k (references ~4k on demand)
@@ -9,7 +9,7 @@ disable-model-invocation: true
 
 # QA
 
-> **TL;DR:** Primeiro a lista do que está sem teste no app inteiro, depois o plano, os testes e o relatório. O teste afirma o comportamento **certo**, vindo de uma fonte, nunca o que o código faz hoje. Teste que acha bug entra marcado como falha conhecida com um ID, e o bug vai para o relatório no `.claude/qa/` da aplicação. Código de produção não é tocado.
+> **TL;DR:** Primeiro a lista do que está sem teste no app inteiro, depois o plano, os testes e o relatório. O teste afirma o comportamento **certo**, vindo de uma fonte, nunca o que o código faz hoje. Teste que acha bug entra marcado como falha conhecida com um ID, e o bug vai para o relatório na `.claude/` da raiz do workspace (`.claude/qa/<app>/`), nunca dentro do app. Código de produção não é tocado.
 
 ## Use when / Don't use when
 
@@ -69,7 +69,7 @@ disable-model-invocation: true
 - [ ] Cada caso do plano tem a fonte do esperado
 - [ ] Suíte inteira verde; falhas conhecidas listadas com ID
 - [ ] `qa-scan.mjs` sem achados de marcador
-- [ ] Relatório em `.claude/qa/` da aplicação com o que está sem teste, plano, resultado, bugs, dúvidas e o que não deu para testar
+- [ ] Relatório em `.claude/qa/<app>/` da raiz do workspace (não no app) com o que está sem teste, plano, resultado, bugs, dúvidas e o que não deu para testar
 
 ## See also
 

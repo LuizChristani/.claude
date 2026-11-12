@@ -67,7 +67,7 @@ disable-model-invocation: true
 - [ ] Cada medição tem os números; o que não foi medido está marcado
 - [ ] Nenhum arquivo de produção mudou; arquivos de medição apagados
 - [ ] Toda proposta diz o custo novo, o preço e como provar que o resultado não muda
-- [ ] Relatório em `.claude/complexity/` da aplicação
+- [ ] Relatório em `.claude/complexity/<app>/` da raiz do workspace (não no app)
 
 ## See also
 

@@ -38,6 +38,9 @@ Quando o teste do caso falha porque a função está errada (o esperado tem font
 
 **🔧 Stack note:** o marcador inverte o resultado: quando o bug for corrigido, o teste passa a falhar e avisa.
 
+- **Convenção do app vence:** se o app já registra bugs conhecidos do jeito dele (formato do ID, arquivo de registro, helper como `knownBugs.ts`), use o formato e o registro dele e cite-os no relatório; o `qa-scan.mjs` vai apontar esses marcadores, e o relatório explica que seguem a convenção do app.
+- **Pulo condicional não é falha conhecida:** `test.skip(!process.env.API, 'motivo')` ou `describe` trocado por `describe.skip` conforme o ambiente pula por falta de recurso, não por bug; não leva ID. O `qa-scan.mjs` só aponta pulo e falha esperada declarados com nome (`it.skip('nome', …)`, `it.fails('nome', …)`) ou sem argumento (`test.skip()`).
+
 ❌ Errado: o teste copia a saída atual e fica verde. O total negativo vira comportamento esperado.
 
 `lib/invoices/tests/calculateInvoiceTotal.test.ts`:

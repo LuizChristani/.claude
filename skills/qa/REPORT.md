@@ -1,6 +1,6 @@
 ---
 name: qa-report
-description: Format of the QA report the QA skill writes inside the tested app — file location and name, sections, the list of everything without tests, bug IDs, severity levels and statuses. Use when creating or updating a QA report or reading one to decide what to fix.
+description: Format of the QA report the QA skill writes in the workspace root .claude/qa/<app>/ (never inside the app) — file location and name, sections, the list of everything without tests, bug IDs, severity levels and statuses. Use when creating or updating a QA report or reading one to decide what to fix.
 type: reference
 scope: cross-cutting
 tokens: ~1k
@@ -8,13 +8,13 @@ tokens: ~1k
 
 # QA report
 
-> **TL;DR:** Um arquivo por rodada em `<app>/.claude/qa/AAAA-MM-DD-<assunto>.md`, com escopo, o que está sem teste no app inteiro, plano, resultado, bugs, dúvidas e o que não deu para testar. Bug só é relatado; a correção é decidida pelo usuário depois.
+> **TL;DR:** Um arquivo por rodada em `<workspace>/.claude/qa/<app>/AAAA-MM-DD-<assunto>.md`, na `.claude/` da raiz (a mesma que guarda esta biblioteca de skills), com escopo, o que está sem teste no app inteiro, plano, resultado, bugs, dúvidas e o que não deu para testar. Bug só é relatado; a correção é decidida pelo usuário depois.
 
 ## Location
 
 | Item | Regra |
 | --- | --- |
-| Pasta | `.claude/qa/` na raiz da aplicação testada (não na biblioteca de skills) |
+| Pasta | `.claude/qa/<app>/` na `.claude/` da raiz do workspace, a mesma que guarda a biblioteca de skills; `<app>` é o nome da pasta da aplicação. **Nunca** no `.claude/` da aplicação: lá ele some (pasta oculta, muitas vezes no `.gitignore`) |
 | Nome | `AAAA-MM-DD-<assunto-em-kebab>.md`; segunda rodada no mesmo dia e assunto ganha `-2` |
 | Rodada nova sobre o mesmo assunto | Arquivo novo; os bugs ainda abertos da rodada anterior são citados pelo ID, não copiados |
 
@@ -33,7 +33,8 @@ Toda rodada lista o que está sem teste na aplicação **inteira**, não só no 
 
 - Agrupe por pasta e marque o risco de cada grupo pelos critérios de [PLAN.md](PLAN.md#priority).
 - O que entrou nesta rodada sai da lista; o que ficou de fora é dito com o motivo ("fora do escopo pedido", "não testável").
-- Diga o limite da heurística: arquivo importado por um teste conta como testado, mesmo que só uma função dele tenha caso.
+- Módulo que só aparece em `vi.mock`/`jest.mock` conta como sem teste: o teste o troca por um falso e não o exercita.
+- Diga o limite da heurística: arquivo importado por um teste conta como testado, mesmo que só uma função dele tenha caso; e import pelo índice de um pacote (`from '@scope/pkg'`) conta só o índice, então arquivos usados só por ele aparecem como sem teste. Os aliases vêm dos `paths` do `tsconfig.json` da raiz.
 
 ## Severity
 
@@ -102,6 +103,8 @@ Não há escala oficial única; esta é a da casa. Na dúvida entre duas, use a 
 ```
 
 ## Anti-patterns
+
+- **Relatório dentro do app:** o arquivo vai para o `.claude/` da aplicação, que é oculto e costuma estar no `.gitignore`; o usuário procura e não acha. Sempre na `.claude/` da raiz, em `qa/<app>/`.
 
 - **Lista de cobertura só do escopo:** a seção "Sem teste" lista só a feature pedida; o resto do app descoberto some do radar.
 - **Bug sem reprodução:** "o total às vezes sai errado", sem entrada, esperado e obtido; ninguém consegue avaliar.
