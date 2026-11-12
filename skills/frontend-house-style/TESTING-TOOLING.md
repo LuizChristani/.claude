@@ -18,6 +18,7 @@ tokens: ~1.5k
 | Nomes | `describe` e `it` em inglês, frase de comportamento (`'returns an empty string for a missing date'`) |
 | Agrupamento | Vários `describe` por tema no mesmo arquivo |
 | Funções e máquinas | Dependências falsas injetadas; afirmar a saída, os estados e as chamadas, nunca o estado interno |
+| Dado vindo de mock | Quando o arquivo já mocka a dependência que produz um valor (token, id, resposta), o teste programa o mock (`mockResolvedValueOnce`), chama a função real que consome o mock e passa o resultado adiante; nunca literal solto pulando esse passo, nem variável local com o nome do mock |
 | Bordas | Vazio, zero, negativo, limite e valor inválido têm cada um o seu caso |
 | Componentes | `renderToStaticMarkup` + `vi.mock` dos hooks e do store; afirmar sobre o HTML |
 | Interação complexa | Não teste clicando: tire a regra para `lib/` ou para um reducer e teste lá |
@@ -36,6 +37,29 @@ describe('UserList', () => {
     const html = renderToStaticMarkup(<UserList />);
     expect(html).toContain('No users yet');
   });
+});
+```
+
+### Wrong vs right: dado vindo de mock
+
+❌ Errado: o token é um literal passado direto. O teste pula o `issueDownloadLink` e não prova que o token emitido é o que vai no header.
+
+```ts
+it('sends the issued token on the download request', async () => {
+  const headers = await downloadHeaders('tok-1');
+  expect(headers['X-Download-Token']).toBe('tok-1');
+});
+```
+
+✅ Certo: o mock `sign` (declarado no topo com `vi.fn()`) emite o token e a função real o entrega ao passo seguinte.
+
+```ts
+it('sends the issued token on the download request', async () => {
+  sign.mockResolvedValueOnce({ token: 'tok-1' });
+  const link = await issueDownloadLink({ fileId: 'f1' });
+
+  const headers = await downloadHeaders(link.token);
+  expect(headers['X-Download-Token']).toBe('tok-1');
 });
 ```
 
@@ -73,3 +97,4 @@ const coverage = {
 - **Edição por shell sem formatter:** escrever arquivo com `sed`, heredoc ou script e dar por pronto porque o hook não reclamou; o hook de edição não vê o shell. Rode `prettier --check` nos arquivos tocados (e `--write` se falhar) antes de fechar a tarefa.
 - **Teste de implementação:** afirmar estado interno, contar renders ou checar classe CSS. Afirme o texto e a estrutura que o usuário vê, e as chamadas feitas.
 - **Cobertura maquiada:** comentário de ignore para chegar a 100%.
+- **Valor solto no lugar do mock:** o arquivo mocka a dependência que emite o valor, mas o teste digita o valor e pula a função que o produz. Programe o mock e passe o retorno da função real adiante.

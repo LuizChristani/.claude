@@ -22,6 +22,34 @@ Registro do que o Claude fez errado no código e de como o usuário pediu para c
 
 ## Entradas
 
+### 2026-11-12 · merchant-portal-web · Token literal no lugar do mock
+- **Errado:** ao repor o teste "três requisições consecutivas" em `packages/pos/src/data/http/one-shot-approval.test.ts`, só renomeei o array `elevate` para `tokens` e passei `'tok-1'`/`'tok-2'` direto ao `authHeaders`, sem usar o mock `elevate` do topo do arquivo.
+- **Correção pedida:** "PROQUE NAO USOU DO MOCK?"
+- **Regra:** quando o arquivo já mocka a dependência que produz um valor, o teste programa o mock (`mockResolvedValueOnce`), chama a função real (`acquireOneShotApproval`) e passa o retorno adiante; nunca literal solto pulando esse passo.
+- **Skill atualizada:** `skills/frontend-house-style/TESTING-TOOLING.md` (linha "Dado vindo de mock", Wrong vs right, anti-pattern "Valor solto no lugar do mock").
+- **Vezes:** 1
+
+### 2026-11-12 · meu-cardapio · "Qualquer toque" limitado ao cardápio travado
+- **Errado:** o pedido era esconder a barra de navegação e a de hora "quando tocar em qualquer coisa do app"; no `hideBars` (`modules/lock-task/.../LockTaskModule.kt`) só escondi com o app travado ou fixado (`lockTaskModeState`), e a tela de Configuração ficou com as barras.
+- **Correção pedida:** "porque quando chega na parte de configuração não some de uma vez as coisas", e depois "sim, faz" para esconder em todas as telas, desde a abertura.
+- **Regra:** "qualquer", "todas" e "sempre" valem para o app inteiro; restringir por estado ou tela é proposta para o usuário decidir antes do código, nunca escolha silenciosa.
+- **Skill atualizada:** `skills/request-reading/SKILL.md` (gatilho "qualquer" na descrição e nas tabelas, Wrong vs right, anti-pattern "Sempre pela metade").
+- **Vezes:** 1
+
+### 2026-11-11 · meu-cardapio · Refinamento tratado como substituição do pedido
+- **Errado:** o pedido era uma tela com as permissões na primeira abertura do app, cada uma com o passo a passo; quando o usuário acrescentou "quando clicar no cardápio vai verificar se está tudo ok", fiz só a conferência no toque em "Cardápio" (`useMenuGate`, `MenuChecks`) e tirei a tela da abertura.
+- **Correção pedida:** "Era para pedir na primeira abertura do app as permissões".
+- **Regra:** mensagem que refina um pedido soma ao que já foi pedido; só tire uma parte quando o usuário disser que ela saiu, e na dúvida confirme numa linha.
+- **Skill atualizada:** `skills/request-reading/SKILL.md` (How to do it, Wrong vs right, anti-pattern "Refinamento que apaga o pedido", Checklist).
+- **Vezes:** 1
+
+### 2026-11-11 · meu-cardapio · Compensar o relógio do aparelho no DPoP
+- **Errado:** com o emulador 20 h atrasado, criei `src/lib/http/server-clock.ts`, que media a diferença pelo `Date` das respostas e assinava o `iat` com a hora do servidor, e o `posBaseQuery` e o `openDeviceSession` reenviavam a requisição recusada (401) com prova nova.
+- **Correção pedida:** "o app não pode compensar a hora, não faz sentido nenhum sendo que aí falha a proteção que colocamos".
+- **Regra:** o app nunca ajusta no cliente o que o servidor confere (hora, nonce, assinatura) para a requisição passar; relógio errado é detectado e vira pendência que bloqueia o uso, com o passo a passo para corrigir.
+- **Skill atualizada:** `meu-cardapio/.claude/skills/meu-cardapio/06-SECURITY.md` (seção Device clock, Wrong vs right, anti-pattern "Contornar a checagem do servidor").
+- **Vezes:** 1
+
 ### 2026-11-10 · subdomain-checker · "Pega tudo" com uma fonte só por padrão
 - **Errado:** o pedido era um verificador que pegasse "tudo o que tiver antes do .meusite.com"; em `subdomain-checker/subdomains.mjs` usei só o crt.sh por padrão e deixei a força bruta de DNS atrás de `--brute`.
 - **Correção pedida:** "precisa trazer tudo o que tiver antes do dominio po", "mas não me traz os nomes deles" e "ainda não puxa tudo o que tiver atras antes de chegar no dominio de fato" (subdomínios de vários níveis, como `api.dev.meusite.com`).
