@@ -1,6 +1,6 @@
 # Memória de correções de código
 
-Registro do que o Claude fez errado no código e de como o usuário pediu para corrigir. Vale para todos os projetos em `meu-controle/`.
+Registro do que o Claude fez errado no código e de como o usuário pediu para corrigir. Vale para todos os projetos.
 
 ## Como usar
 
